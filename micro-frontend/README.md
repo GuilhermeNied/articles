@@ -43,6 +43,9 @@ Vou dividir minha expêriencia de algumas partes, **Configuração**, **Desenvol
 ## Referências:
 
 [Micro Frontends - extending the microservice idea to frontend development](https://micro-frontends.org/)
+
 [Micro Frontends](https://martinfowler.com/articles/micro-frontends.html)
+
 [Module Federation](https://webpack.js.org/concepts/module-federation/)
+
 [Single SPA](https://single-spa.js.org/)
