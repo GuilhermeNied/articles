@@ -20,13 +20,20 @@ Normalmente o os micro frontends são utilizados para resolver problemas como es
 de aplicações grande e complexas. Isso permite que times diferentes trabalhem em diferentes partes de uma grande aplicação
 sem comprometer toda a aplicação e sem atrapalhar o desenvolvimento de outras funcionalidades.
 
-## Quando devemos utilizar
-
-Aqui vem um grande **depende**. Na minha opinião esse tipo de arquitetura deve ser aplicada
-
 ## Vantagens
 
+As principais vantagens do uso de micro frontend são:
+
+- A modularidade de diferentes partes de uma aplicação;
+- A utilização de diferentes frameworks para a criação de diferentes partes de uma aplicação;
+- Uma autonomia das equipes, fazendo com que as equipes possam trabalhar em diversas partes de uma aplicaçao independentemente;
+
 ## Desvantagens
+
+As principais desvantagens do uso de micro frontend são:
+
+- A complexidade da impletação é um grande desafio, conseguirmos compartilhar estados e outros dados em diferentes micro frontends é uma grande barreira na hora de implementar uma solução utilizando essa arquitetura.
+- O desafio de seguir o mesmo design é uma grande barreira, principalmente quando não temos um Design System.
 
 ## Minha experiência
 
