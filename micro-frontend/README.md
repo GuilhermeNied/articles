@@ -61,12 +61,29 @@ Na aplicação em React eu criei tudo do zero, então:
     - webpack
     - webpack-cli
     - webpack-dev-server
+    - html-webpack-plugin
 4. Agora criei todo o necessário para a aplicação funcionar o App.jsx e o index.js
-5. Após tudo isso eu criei o arquivo webpack.config.js
+5. Também é preciso criar um arquivo index.html assim como no exemplo a seguir:
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>React App</title>
+    </head>
+    <body>
+      <div id="root"></div>
+    </body>
+  </html>
+  ```
+6. Após tudo isso eu criei o arquivo webpack.config.js
+7. Para rodar o projeto React faça o build e depois rode o start
   
   ```javascript
   const path = require('path')
   const { ModuleFederationPlugin } = require('webpack').container
+  const HtmlWebpackPlugin = require('html-webpack-plugin')
 
   module.exports = {
     entry: './src/index.js',
@@ -110,6 +127,9 @@ Na aplicação em React eu criei tudo do zero, então:
           javascript_module:
             'javascript_module@http://localhost:4300/remoteEntry.js'
         }
+      }),
+      new HtmlWebpackPlugin({
+        template: './src/index.html',
       })
     ],
     devServer: {
@@ -120,6 +140,7 @@ Na aplicação em React eu criei tudo do zero, então:
       hot: true
     }
   }
+
   ```
 6. Após isso adicionei esses dois scripts no meu arquivo package.json
   ```
