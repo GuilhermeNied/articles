@@ -42,6 +42,96 @@ Module Federation e também já utilizei o Single SPA.
 Todos os exemplo que vou utilizar são de um pequeno projeto que fiz utilizando React, Angular e Javascript Vanilla.
 Vou dividir minha expêriencia de algumas partes, **Configuração**, **Desenvolvimento** e **Execução**
 
+## Tutorial
+
+Para começar precisamos criar 3 apliações, uma em React(que é a minha aplicação principal), outra em Angular e outra com JS.
+
+Na aplicação em React eu criei tudo do zero, então:
+
+1. Primeiro eu iniciei uma aplicação com `npm init -y`
+2. Depois fiz a instalação do react e react-dom: `npm i react react-dom`
+3. Após isso instalei esta lista de depêndencias, todas elas como dev dependencies:
+    - @babel/core
+    - @babel/preset-env
+    - @babel/preset-react
+    - babel-loader
+    - css-loader
+    - html-webpack-plugin
+    - style-loader
+    - webpack
+    - webpack-cli
+    - webpack-dev-server
+4. Agora criei todo o necessário para a aplicação funcionar o App.jsx e o index.js
+5. Após tudo isso eu criei o arquivo webpack.config.js
+  
+  ```javascript
+  const path = require('path')
+  const { ModuleFederationPlugin } = require('webpack').container
+
+  module.exports = {
+    entry: './src/index.js',
+    resolve: {
+      extensions: ['.js', '.jsx', '.ts']
+    },
+    optimization: {
+      minimize: false
+    },
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'bundle.js',
+      publicPath: 'auto'
+    },
+    mode: 'development',
+    module: {
+      rules: [
+        {
+          test: /\.(js|jsx)$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env', '@babel/preset-react']
+            }
+          }
+        },
+        {
+          test: /\.css$/,
+          use: ['style-loader', 'css-loader']
+        }
+      ]
+    },
+    resolve: {
+      extensions: ['.js', '.jsx']
+    },
+    plugins: [
+      new ModuleFederationPlugin({
+        remotes: {
+          angular_module: 'angular_module@http://localhost:4200/remoteEntry.js',
+          javascript_module:
+            'javascript_module@http://localhost:4300/remoteEntry.js'
+        }
+      })
+    ],
+    devServer: {
+      static: {
+        directory: path.join(__dirname, 'dist')
+      },
+      port: 3000,
+      hot: true
+    }
+  }
+  ```
+6. Após isso adicionei esses dois scripts no meu arquivo package.json
+  ```
+  "scripts": {
+      "start": "webpack serve --mode development",
+      "build": "webpack --mode production"
+  },
+  ```
+
+
+Na aplicação JS
+
 ### Configuração
 
 A configuração foi uma das partes mais complexas e dificieis para mim principalmente porque a maioria dos exemplos que
