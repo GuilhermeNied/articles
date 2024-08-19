@@ -46,112 +46,246 @@ Vou dividir minha expêriencia de algumas partes, **Configuração**, **Desenvol
 
 Para começar precisamos criar 3 apliações, uma em React(que é a minha aplicação principal), outra em Angular e outra com JS.
 
-Na aplicação em React eu criei tudo do zero, então:
+### Na aplicação em React eu criei tudo do zero, então:
 
 1. Primeiro eu iniciei uma aplicação com `npm init -y`
 2. Depois fiz a instalação do react e react-dom: `npm i react react-dom`
 3. Após isso instalei esta lista de depêndencias, todas elas como dev dependencies:
-    - @babel/core
-    - @babel/preset-env
-    - @babel/preset-react
-    - babel-loader
-    - css-loader
-    - html-webpack-plugin
-    - style-loader
-    - webpack
-    - webpack-cli
-    - webpack-dev-server
-    - html-webpack-plugin
+   - @babel/core
+   - @babel/preset-env
+   - @babel/preset-react
+   - babel-loader
+   - css-loader
+   - html-webpack-plugin
+   - style-loader
+   - webpack
+   - webpack-cli
+   - webpack-dev-server
+   - html-webpack-plugin
+     Para facilitar `npm i @babel/core @babel/preset-env @babel/preset-react babel-loader css-loader html-webpack-plugin style-loader webpack webpack-cli webpack-dev-server html-webpack-plugin -D`
 4. Agora criei todo o necessário para a aplicação funcionar o App.jsx e o index.js
+   Exemplos:
+
+   ```javascript
+   import React from 'react'
+   import ReactDOM from 'react-dom/client'
+   import App from './App'
+
+   const root = ReactDOM.createRoot(document.getElementById('root'))
+   root.render(
+     <React.StrictMode>
+       <App />
+     </React.StrictMode>
+   )
+   ```
+
+   ```javascript
+   import React from 'react'
+
+   function App() {
+     return (
+       <div>
+         <h1>Olá, Mundo!</h1>
+         <p>Bem-vindo à minha aplicação React.</p>
+       </div>
+     )
+   }
+
+   export default App
+   ```
+
 5. Também é preciso criar um arquivo index.html assim como no exemplo a seguir:
-  ```html
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>React App</title>
-    </head>
-    <body>
-      <div id="root"></div>
-    </body>
-  </html>
-  ```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
 6. Após tudo isso eu criei o arquivo webpack.config.js
 7. Para rodar o projeto React faça o build e depois rode o start
-  
-  ```javascript
-  const path = require('path')
-  const { ModuleFederationPlugin } = require('webpack').container
-  const HtmlWebpackPlugin = require('html-webpack-plugin')
 
-  module.exports = {
-    entry: './src/index.js',
-    resolve: {
-      extensions: ['.js', '.jsx', '.ts']
-    },
-    optimization: {
-      minimize: false
-    },
-    output: {
-      path: path.resolve(__dirname, 'dist'),
-      filename: 'bundle.js',
-      publicPath: 'auto'
-    },
-    mode: 'development',
-    module: {
-      rules: [
-        {
-          test: /\.(js|jsx)$/,
-          exclude: /node_modules/,
-          use: {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env', '@babel/preset-react']
-            }
-          }
-        },
-        {
-          test: /\.css$/,
-          use: ['style-loader', 'css-loader']
-        }
-      ]
-    },
-    resolve: {
-      extensions: ['.js', '.jsx']
-    },
-    plugins: [
-      new ModuleFederationPlugin({
-        remotes: {
-          angular_module: 'angular_module@http://localhost:4200/remoteEntry.js',
-          javascript_module:
-            'javascript_module@http://localhost:4300/remoteEntry.js'
-        }
-      }),
-      new HtmlWebpackPlugin({
-        template: './src/index.html',
-      })
-    ],
-    devServer: {
-      static: {
-        directory: path.join(__dirname, 'dist')
-      },
-      port: 3000,
-      hot: true
-    }
-  }
+```javascript
+const path = require('path')
+const { ModuleFederationPlugin } = require('webpack').container
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
-  ```
-6. Após isso adicionei esses dois scripts no meu arquivo package.json
-  ```
-  "scripts": {
-      "start": "webpack serve --mode development",
-      "build": "webpack --mode production"
+module.exports = {
+  entry: './src/index.js',
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts']
   },
-  ```
+  optimization: {
+    minimize: false
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.js',
+    publicPath: 'auto'
+  },
+  mode: 'development',
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-react']
+          }
+        }
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
+    ]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx']
+  },
+  plugins: [
+    new ModuleFederationPlugin({
+      remotes: {
+        angular_module: 'angular_module@http://localhost:4200/remoteEntry.js',
+        javascript_module:
+          'javascript_module@http://localhost:4300/remoteEntry.js'
+      }
+    }),
+    new HtmlWebpackPlugin({
+      template: './src/index.html'
+    })
+  ],
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'dist')
+    },
+    port: 3000,
+    hot: true
+  }
+}
+```
 
+6. Após isso adicionei esses dois scripts no meu arquivo package.json
 
-Na aplicação JS
+```
+"scripts": {
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production"
+},
+```
+
+### Na aplicação JS
+
+1. Primeiro eu iniciei uma aplicação com `npm init -y`
+2. Após isso instalei esta lista de depêndencias, todas elas como dev dependencies:
+
+   - @babel/core
+   - @babel/preset-env
+   - babel-loader
+   - css-loader
+   - html-webpack-plugin
+   - style-loader
+   - webpack
+   - webpack-cli
+   - webpack-dev-server
+   - html-webpack-plugin
+     Para facilitar `npm i @babel/core @babel/preset-env babel-loader css-loader html-webpack-plugin style-loader webpack webpack-cli webpack-dev-server html-webpack-plugin -D`
+
+3. Fiz a criação do componente que desejo expor, no meu caso o `header.js`
+   Ex:
+
+```javascript
+function createHeader() {
+  const element = document.createElement('header')
+  element.innerHTML = '<h1 class="header">MC</h1>'
+  return element
+}
+
+export default createHeader
+```
+
+4. Após isso fiz a criação da função que vou expor para montar o meu componente no meu module pai, no meu caso criei como index.js, porém os nomes dos arquivos não importa é só cuidar para que seja exposto corretamente
+
+```javascript
+import createHeader from './header.js'
+export function mountHeader(containerId) {
+  const container = document.getElementById(containerId)
+  if (container) {
+    container.appendChild(createHeader())
+  }
+}
+```
+
+5. Depois de tudo isso fiz a criação do `webpack.config.js`
+
+```javascript
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin')
+
+module.exports = {
+  entry: './src/index.js',
+  mode: 'development',
+  output: {
+    publicPath: 'auto'
+  },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'dist')
+    },
+    port: 4300,
+    hot: true
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
+    ]
+  },
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'javascript_module',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './Header': './src/index.js'
+      }
+    }),
+    new HtmlWebpackPlugin({
+      template: './index.html'
+    })
+  ]
+}
+```
+
+6. Após tudo isso adicionei o script no meu `package.json`
+
+```json
+"scripts": {
+    "start": "webpack serve --mode development --open"
+},
+```
 
 ### Configuração
 
