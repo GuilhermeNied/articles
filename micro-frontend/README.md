@@ -287,73 +287,348 @@ module.exports = {
 },
 ```
 
-### Configuração
+### Na aplicação Angular
 
-A configuração foi uma das partes mais complexas e dificieis para mim principalmente porque a maioria dos exemplos que
-pesquisei pra usar como referência ou estavam desatualizados para a versão do Angular ou do React ou não tinha a
-configuração que eu precisava. Outro motivo por ser mais complicado é porque quando ocorre erro de build em alguma das aplicações, na maioria das vezes o erro não é muito explícito e isso deixa um pouco mais complicado de corrigi-lo.
-Então pesquisando um pouco mais e lendo a configuração montei as três configurações para utilizar JS, Angular e React.
+1. Criei um projeto com a CLI do Angular
+   **É muito importante que o projeto seja criado com CSS**
+   Estou utilizando esta versão da CLI:
 
-#### Angular
+   - Angular CLI: 17.0.8
 
-```javascript
-...
-  plugins: [
-      new ModuleFederationPlugin({
-          name: "angular_module",
-          filename: "remoteEntry.js",
-          exposes: {
-              './Component':'./src/loadApp.ts'
-          },
-      }),
-      sharedMappings.getPlugin()
-    ],
-```
+2. Instalei as dependencias como desenvolvimento
 
-##### Javascript
+- webpack
+- webpack-cli
+- webpack-merge
+- html-webpack-plugin
+  Para facilitar `npm i webpack webpack-cli webpack-merge html-webpack-plugin ngx-build-plus -D`
+
+3. Instalei a dependencia
+
+- @angular-architects/module-federation
+  Para facilitar `npm i @angular-architects/module-federation`
+
+4. Criei o arquivo `webpack.config.js` na raiz do projeto
 
 ```javascript
-...
+const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin')
+const mf = require('@angular-architects/module-federation/webpack')
+const path = require('path')
+const sharedMappings = new mf.SharedMappings()
+sharedMappings.register(path.join(__dirname, 'tsconfig.json'))
+
+module.exports = {
+  output: {
+    uniqueName: 'angular_module',
+    publicPath: 'auto',
+    scriptType: 'text/javascript'
+  },
+  optimization: {
+    runtimeChunk: false
+  },
+  resolve: {
+    alias: {
+      ...sharedMappings.getAliases()
+    }
+  },
+  experiments: {
+    outputModule: true
+  },
   plugins: [
     new ModuleFederationPlugin({
-      name: 'javascript_module',
+      name: 'angular_module',
       filename: 'remoteEntry.js',
       exposes: {
-        './Header': './src/index.js'
+        './Component': './src/loadApp.ts'
       }
     }),
-    new HtmlWebpackPlugin({
-      template: './index.html'
-    })
+    sharedMappings.getPlugin()
   ]
+}
 ```
 
-##### React
+5. Colei todo esse json no angular.json.
 
-```javascript
-...
-  plugins: [
-      new ModuleFederationPlugin({
-        remotes: {
-          angular_module: 'angular_module@http://localhost:4200/remoteEntry.js',
-          javascript_module:
-            'javascript_module@http://localhost:4300/remoteEntry.js'
+```json
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "angular_module": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "ngx-build-plus:browser",
+          "options": {
+            "outputPath": "dist/angular_module",
+            "index": "src/index.html",
+            "polyfills": ["zone.js"],
+            "tsConfig": "tsconfig.app.json",
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": ["src/styles.css"],
+            "scripts": [],
+            "main": "src/main.ts",
+            "extraWebpackConfig": "webpack.config.js",
+            "commonChunk": false
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "outputHashing": "all",
+              "extraWebpackConfig": "webpack.prod.config.js"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "ngx-build-plus:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "angular_module:build:production",
+              "extraWebpackConfig": "webpack.prod.config.js"
+            },
+            "development": {
+              "buildTarget": "angular_module:build:development"
+            }
+          },
+          "defaultConfiguration": "development",
+          "options": {
+            "port": 4200,
+            "publicHost": "http://localhost:4200",
+            "extraWebpackConfig": "webpack.config.js"
+          }
+        },
+        "extract-i18n": {
+          "builder": "ngx-build-plus:extract-i18n",
+          "options": {
+            "buildTarget": "angular_module:build",
+            "extraWebpackConfig": "webpack.config.js"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "tsconfig.spec.json",
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": ["src/styles.css"],
+            "scripts": []
+          }
         }
-      })
-    ],
-    devServer: {
-      static: {
-        directory: path.join(__dirname, 'dist')
-      },
-      port: 3000,
-      hot: true
+      }
     }
+  }
+}
 ```
 
-Vocês podem notar que a configuração do React é diferente das outras, isto é porque ele é que acopla os outros dois micro
-frontends.
+6. Adicionei este script no package.sjon
 
-### Desenvolvolvimento
+```json
+    "run:all": "node node_modules @angular-architects/module-federation/src/server/mf-dev-server.js"
+```
+
+7. Na pasta src criei o arquivo loadApp.ts
+
+```typescript
+import 'zone.js'
+
+import { AppModule } from './app/app.module'
+import { platformBrowser } from '@angular/platform-browser'
+
+const mount = () => {
+  platformBrowser()
+    .bootstrapModule(AppModule)
+    .catch(err => console.error(err))
+}
+
+export { mount }
+```
+
+8. Após isso configure os seguintes arquivos desta maneira
+
+- app-routing.module.ts
+
+```typescript
+import { NgModule } from '@angular/core'
+import { RouterModule, Routes } from '@angular/router'
+import { AppComponent } from './app.component'
+
+const routes: Routes = [
+  {
+    path: '',
+    component: AppComponent
+  }
+]
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {}
+```
+
+- app.component.ts
+
+```typescript
+import { Component } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { RouterOutlet } from '@angular/router'
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html'
+})
+export class AppComponent {
+  title = 'angular_module'
+}
+```
+
+- app.module.ts
+
+```typescript
+import { NgModule } from '@angular/core'
+
+import { AppComponent } from './app.component'
+import { CommonModule } from '@angular/common'
+import { AppRoutingModule } from './app-routing.module'
+import { BrowserModule } from '@angular/platform-browser'
+@NgModule({
+  declarations: [AppComponent],
+  imports: [CommonModule, AppRoutingModule, BrowserModule],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+```
+
+- main.ts
+
+```typescript
+import { platformBrowser } from '@angular/platform-browser'
+
+import { AppModule } from './app/app.module'
+
+platformBrowser()
+  .bootstrapModule(AppModule)
+  .catch(err => console.error(err))
+```
+
+- tsconfig.app.json
+
+```json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "types": []
+  },
+  "files": ["src/main.ts", "src/loadApp.ts"],
+  "include": ["src/**/*.d.ts"]
+}
+```
+
+- tsconfig.json
+
+```json
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "declaration": false,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "useDefineForClassFields": false,
+    "lib": ["ES2022", "dom"]
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  }
+}
+```
+
+### Plugando tudo
+
+1. Na aplicação container(React), crie uma pasta module e crie estes arquivos
+
+- Header.jsx
+
+```jsx
+import React from 'react'
+import { useEffect } from 'react'
+
+export default function Header() {
+  useEffect(() => {
+    import('javascript_module/Header').then(module => {
+      module.mountHeader('js-widget-container')
+    })
+  }, [])
+  return <header id="js-widget-container"></header>
+}
+```
+
+- Angular.jsx
+
+```jsx
+import React from 'react'
+
+import { useEffect, useRef } from 'react'
+
+const AngularModule = () => {
+  const ref = useRef(null)
+  useEffect(() => {
+    import('angular_module/Component').then(module => {
+      module.mount()
+    })
+  }, [])
+  return (
+    <div className="left-sidebar-module" ref={ref}>
+      <app-root></app-root>
+    </div>
+  )
+}
+
+export default AngularModule
+```
+
+#### Para rodar utilize os comandos de start e run:all(para o Angular)
+
+### Desenvolvimento
 
 O desenvolvimento foi bastante tranquilo, principalmente por ele ser igual ao que fazemos hoje com React, Angular. Só o
 Javascript tem uma peculiaridade, porque o Webpack que é quem faz o build da aplicação não exportar HTML, existem diversas
@@ -402,6 +677,8 @@ Bom, aqui vai muito da minha opinião. É incrível o que podemos fazer com as f
 Agora fica a pergunta: Micro frontend serve para todos os casos?
 
 A resposta é não. Mesmo que tenhamos aplicações escaláveis, ele se torna muito complexo e difícil de ser acoplado em aplicações legadas. Não quer dizer que não podemos fazer, mas será um grande trabalho que deve começar pelo estudo da aplicação que já está em produção. Para projetos menores, cujo intuito não seja estudar ou colocar em prática conceitos de micro frontend, não vejo sentido em usar essa abordagem. Como será um projeto pequeno, provavelmente não terá muitos módulos a serem separados.
+
+Um possível problema que devemos ter em mente é que utilizar diferentes frameworks ou formas de desenvolver os módulos acaba deixando o desenvolvimento e a escalabilidade mais complexos.
 
 Agora, se você quiser testar, vá em frente! Utilize meu projeto como exemplo, faça coisas simples e complexas! Caso não queira passar por toda a parte de configuração, recomendo utilizar outra biblioteca para isso. Você pode usar a que preferir, mas o **<u>[Single SPA](https://single-spa.js.org/)</u>** é uma das principais libs e tem uma boa comunidade. Então, eu a recomendaria. Mas, como eu disse, pesquise e veja a que melhor se encaixa ao seu projeto.
 
