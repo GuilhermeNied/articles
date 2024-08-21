@@ -42,11 +42,15 @@ Module Federation e também já utilizei o Single SPA.
 Todos os exemplo que vou utilizar são de um pequeno projeto que fiz utilizando React, Angular e Javascript Vanilla.
 Vou dividir minha expêriencia de algumas partes, **Configuração**, **Desenvolvimento** e **Execução**
 
-## Tutorial
+## Passo a passo de como fiz as 3 aplicações funcionarem
 
 Para começar precisamos criar 3 apliações, uma em React(que é a minha aplicação principal), outra em Angular e outra com JS.
 
 ### Na aplicação em React eu criei tudo do zero, então:
+
+**Utilizei o Node na versão 21.6 para criar a aplicação**
+
+**Lembrando que a aplicação React é quem receberá os outros módulos**
 
 1. Primeiro eu iniciei uma aplicação com `npm init -y`
 2. Depois fiz a instalação do react e react-dom: `npm i react react-dom`
@@ -66,33 +70,37 @@ Para começar precisamos criar 3 apliações, uma em React(que é a minha aplica
 4. Agora criei todo o necessário para a aplicação funcionar o App.jsx e o index.js
    Exemplos:
 
-   ```javascript
-   import React from 'react'
-   import ReactDOM from 'react-dom/client'
-   import App from './App'
+index.js
 
-   const root = ReactDOM.createRoot(document.getElementById('root'))
-   root.render(
-     <React.StrictMode>
-       <App />
-     </React.StrictMode>
-   )
-   ```
+```javascript
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
 
-   ```javascript
-   import React from 'react'
+const root = ReactDOM.createRoot(document.getElementById('root'))
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+```
 
-   function App() {
-     return (
-       <div>
-         <h1>Olá, Mundo!</h1>
-         <p>Bem-vindo à minha aplicação React.</p>
-       </div>
-     )
-   }
+App.jsx
 
-   export default App
-   ```
+```javascript
+import React from 'react'
+
+function App() {
+  return (
+    <div>
+      <h1>Olá, Mundo!</h1>
+      <p>Bem-vindo à minha aplicação React.</p>
+    </div>
+  )
+}
+
+export default App
+```
 
 5. Também é preciso criar um arquivo index.html assim como no exemplo a seguir:
 
@@ -110,8 +118,7 @@ Para começar precisamos criar 3 apliações, uma em React(que é a minha aplica
 </html>
 ```
 
-6. Após tudo isso eu criei o arquivo webpack.config.js
-7. Para rodar o projeto React faça o build e depois rode o start
+6. Após tudo isso eu criei o arquivo webpack.config.js na raiz do projeto
 
 ```javascript
 const path = require('path')
@@ -175,7 +182,7 @@ module.exports = {
 }
 ```
 
-6. Após isso adicionei esses dois scripts no meu arquivo package.json
+7. Após isso adicionei esses dois scripts no meu arquivo package.json
 
 ```
 "scripts": {
@@ -201,7 +208,7 @@ module.exports = {
    - html-webpack-plugin
      Para facilitar `npm i @babel/core @babel/preset-env babel-loader css-loader html-webpack-plugin style-loader webpack webpack-cli webpack-dev-server html-webpack-plugin -D`
 
-3. Fiz a criação do componente que desejo expor, no meu caso o `header.js`
+3. Fiz a criação do componente que desejo expor, no meu caso o `header.js` dentro da pasta src
    Ex:
 
 ```javascript
@@ -214,7 +221,7 @@ function createHeader() {
 export default createHeader
 ```
 
-4. Após isso fiz a criação da função que vou expor para montar o meu componente no meu module pai, no meu caso criei como index.js, porém os nomes dos arquivos não importa é só cuidar para que seja exposto corretamente
+4. Após isso fiz a criação da função que vou expor para montar o meu componente no meu module pai, no meu caso criei como index.js dentro da pasta src, porém os nomes dos arquivos não importa é só cuidar para que seja exposto corretamente
 
 ```javascript
 import createHeader from './header.js'
@@ -226,7 +233,9 @@ export function mountHeader(containerId) {
 }
 ```
 
-5. Depois de tudo isso fiz a criação do `webpack.config.js`
+6. Também é preciso criar um index.html padrão na raiz do projeto
+
+7. Depois de tudo isso fiz a criação do `webpack.config.js` na raiz do projeto
 
 ```javascript
 const path = require('path')
@@ -279,7 +288,7 @@ module.exports = {
 }
 ```
 
-6. Após tudo isso adicionei o script no meu `package.json`
+8. Após tudo isso adicionei o script no meu `package.json`
 
 ```json
 "scripts": {
@@ -465,7 +474,7 @@ const mount = () => {
 export { mount }
 ```
 
-8. Após isso configure os seguintes arquivos desta maneira
+8. Após isso configure os seguintes arquivos desta maneira dentro da pasta app
 
 - app-routing.module.ts
 
@@ -584,7 +593,7 @@ platformBrowser()
 
 ### Plugando tudo
 
-1. Na aplicação container(React), crie uma pasta module e crie estes arquivos
+1. Na aplicação container(React), crie uma pasta modules dentro de src e crie estes arquivos
 
 - Header.jsx
 
@@ -625,6 +634,8 @@ const AngularModule = () => {
 
 export default AngularModule
 ```
+
+2. Depois disso import no arquivo App.jsx e utilize como um componente normal do React
 
 #### Para rodar utilize os comandos de start e run:all(para o Angular)
 
